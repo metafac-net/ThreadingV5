@@ -8,12 +8,13 @@
     <PackageRequireLicenseAcceptance>False</PackageRequireLicenseAcceptance>
     <Description>Core threading types based on System.Threading.Channels: EventProcessor, StateMachine, ExecutionQueue and Sequencer - a scheduler that 
     coordinates the execution of synchronous and asynchronous tasks using a hierarchical key that defines their relative concurrency.</Description>
+    <Title>MetaFac.Threading</Title>
     <Company>MetaFac</Company>
     <Product>Threading</Product>
     <PackageLicenseUrl></PackageLicenseUrl>
     <Authors>MetaFac Contributors</Authors>
-    <PackageProjectUrl>https://dev.azure.com/labapps21/LAP</PackageProjectUrl>
-    <RepositoryUrl>https://dev.azure.com/labapps21/LAP/_git/Threading</RepositoryUrl>
+    <PackageProjectUrl>https://dev.azure.com/MetaFac/OSR</PackageProjectUrl>
+    <RepositoryUrl>https://dev.azure.com/MetaFac/OSR/_git/Threading</RepositoryUrl>
     <RepositoryType>Git</RepositoryType>
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
     <SignAssembly>true</SignAssembly>
