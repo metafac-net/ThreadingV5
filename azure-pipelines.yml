@@ -1,19 +1,51 @@
-# Starter pipeline
-# Start with a minimal pipeline that you can customize to build and deploy your code.
-# Add steps that build, run tests, deploy, and more:
-# https://aka.ms/yaml
-
 trigger:
 - main
 
 pool:
   vmImage: ubuntu-latest
 
-steps:
-- script: echo Hello, world!
-  displayName: 'Run a one-line script'
+variables:
+  buildConfiguration: 'Release'
 
-- script: |
-    echo Add other tasks to build, test, and deploy your project.
-    echo See https://aka.ms/yaml
-  displayName: 'Run a multi-line script'
+steps:
+- checkout: self
+  fetchDepth: 0
+
+- task: UseDotNet@2
+  displayName: 'Use .NET 6.x'
+  inputs:
+    packageType: 'sdk'
+    version: '6.x'
+    includePreviewVersions: false
+    
+- task: UseDotNet@2
+  displayName: 'Use .NET 7.x'
+  inputs:
+    packageType: 'sdk'
+    version: '7.x'
+    includePreviewVersions: true
+    
+- script: dotnet build --configuration $(buildConfiguration)
+  displayName: 'dotnet build $(buildConfiguration)'
+
+- script: dotnet test --configuration $(buildConfiguration) --logger trx
+  displayName: 'dotnet test $(buildConfiguration)'
+
+- task: PublishTestResults@2
+  condition: succeededOrFailed()
+  inputs:
+    testRunner: VSTest
+    testResultsFiles: '**/*.trx'
+
+- task: NuGetAuthenticate@0
+  displayName: 'NuGet Authenticate'
+
+- task: NuGetCommand@2
+  displayName: 'NuGet push'
+  inputs:
+    command: push
+    packagesToPush: '**/*.nupkg'
+    nuGetFeedType: external
+    publishFeedCredentials: 'PublicNuGet'
+    allowPackageConflicts: true
+    includeSymbols: true

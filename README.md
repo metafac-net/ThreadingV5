@@ -1,20 +1,38 @@
-# Introduction 
-TODO: Give a short introduction of your project. Let this section explain the objectives or the motivation behind this project. 
+# Core
 
-# Getting Started
-TODO: Guide users through getting your code up and running on their own system. In this section you can talk about:
-1.	Installation process
-2.	Software dependencies
-3.	Latest releases
-4.	API references
+## AwaitableCounter
+A thread-safe counter that signals each time zero is crossed (in either direction)
+via a completion task. Can be used in hierarchies of counters.
 
-# Build and Test
-TODO: Describe and show how to build your code and run the tests. 
+## EventQueueBase
+An abstract base class that uses System.Threading.Channels to implement a single
+threaded consumer of events.
 
-# Contribute
-TODO: Explain how other users and developers can contribute to make your code better. 
+## ExecutionQueue
+A derivation of EventQueueBase. Events are IExecutable. Execute() is called
+for each event.
 
-If you want to learn more about creating good readme files then refer the following [guidelines](https://docs.microsoft.com/en-us/azure/devops/repos/git/create-a-readme?view=azure-devops). You can also seek inspiration from the below readme files:
-- [ASP.NET Core](https://github.com/aspnet/Home)
-- [Visual Studio Code](https://github.com/Microsoft/vscode)
-- [Chakra Core](https://github.com/Microsoft/ChakraCore)
+## EventProcessor
+A derivation of EventQueueBase. Events are passed to a provided implementation of 
+IEventHandler.
+
+## StateMachine
+A derivation of EventQueueBase. Each event and current state are passed to a provided implementation of 
+IStateEventHandler which returns updated state.
+
+## Sequencer
+Based on System.Threading.Channels, a scheduler that coordinates the execution 
+of synchronous and asynchronous tasks using a hierarchical key that defines their 
+relative concurrency. For example, if tasks are dispatched sequentially with the 
+following hierarchical keys:
+1. A
+2. B
+3. A.X
+4. A.Y
+5. A
+
+then:
+
+- tasks 1 and 2 will run in parallel;
+- tasks 3 and 4 will both run in parallel after task 1 ends;
+- task 5 will run after both tasks 3 and 4 end.
