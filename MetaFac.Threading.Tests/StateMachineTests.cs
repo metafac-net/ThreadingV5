@@ -223,7 +223,11 @@ namespace MetaFac.Threading.Tests
             }
         }
 
-        [Theory(Skip = "Need to fix completion race condition")]
+        [Theory]
+        [InlineData(2)]
+        [InlineData(100)]
+        [InlineData(1_000)]
+        [InlineData(10_000)]
         [InlineData(100_000)]
         public async Task EnqueueManyEvents(int iterations)
         {
@@ -237,9 +241,7 @@ namespace MetaFac.Threading.Tests
                     await queue.EnqueueAsync(new Sample(i));
                 }
                 await queue.EnqueueAsync(new Sample(0));
-                await handler.Complete;
-
-                var snapshot = queue.Snapshot;
+                var snapshot = await handler.Complete;
                 snapshot.N.Should().Be(iterations);
             }
         }

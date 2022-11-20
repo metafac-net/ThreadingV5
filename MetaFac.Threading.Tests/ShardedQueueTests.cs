@@ -24,42 +24,6 @@ namespace MetaFac.Threading.Tests
             }
         }
 
-        [Fact]
-        public async Task ShardPool_ReactiveSubject()
-        {
-            const int ActorCount = 10;
-            const int MaxThreads = 4;
-            const int EventCount = 1000;
-            var actors = new StatefulObserver<long, int>[ActorCount];
-            for (int a = 0; a < ActorCount; a++)
-            {
-                actors[a] = new StatefulObserver<long, int>(0L, (s, e) => s + e);
-            }
-            var observer = new ShardObserver(actors);
-            using var pool = new ShardPool<RxQueue<ActorEvent>, ActorEvent>(
-                () => new RxQueue<ActorEvent>(Scheduler.Default, observer),
-                MaxThreads);
-
-            Parallel.For(0, EventCount, async (i) =>
-            {
-                int a = i % ActorCount;
-                await pool.EnqueueAsync(a, new ActorEvent(a, i, false));
-            });
-
-            for (int a = 0; a < ActorCount; a++)
-            {
-                await pool.EnqueueAsync(a, new ActorEvent(a, 0, true));
-            }
-
-            long result = 0;
-            for (int a = 0; a < ActorCount; a++)
-            {
-                result += await actors[a].FinalState.ConfigureAwait(false);
-            }
-
-            result.Should().Be(499500L);
-        }
-
         private sealed class ShardObserver : IQueueReader<ActorEvent>, IObserver<ActorEvent>
         {
             private readonly StatefulObserver<long, int>[] _actors;

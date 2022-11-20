@@ -9,7 +9,7 @@ namespace MetaFac.Threading
         private readonly IQueueWriter<TEvent> _queue;
         private readonly IStateEventHandler<TState, TEvent> _handler;
         private TState _currentState;
-        public TState Snapshot => _currentState;
+        //public TState Snapshot => _currentState;
 
         public StateMachine(CancellationToken token, IStateEventHandler<TState, TEvent> handler, TState initialState)
         {

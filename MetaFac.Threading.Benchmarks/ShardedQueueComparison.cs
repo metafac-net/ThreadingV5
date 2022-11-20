@@ -63,38 +63,5 @@ namespace MetaFac.Threading.Benchmarks
             }
         }
 
-        //[Benchmark(OperationsPerInvoke = EventCount)]
-        public async ValueTask Sharded_SubjectQueue()
-        {
-            var actors = new TestActor[ActorCount];
-            for (int a = 0; a < ActorCount; a++)
-            {
-                actors[a] = new TestActor();
-            }
-            ShardObserver observer = new ShardObserver(actors);
-
-            using var subjectPool = new ShardPool<RxQueue<ActorEvent>, ActorEvent>(
-                () => new RxQueue<ActorEvent>(Scheduler.Default, observer),
-                Shards);
-
-            ParallelOptions options = new ParallelOptions() { MaxDegreeOfParallelism = InParallelism };
-            Parallel.For(0, EventCount, options, (i) =>
-            {
-                int actor = i % ActorCount;
-                subjectPool.EnqueueAsync(actor, new ActorEvent(actor, false, i))
-                .ConfigureAwait(false).GetAwaiter().GetResult();
-            });
-
-            for (int actor = 0; actor < ActorCount; actor++)
-            {
-                await subjectPool.EnqueueAsync(actor, new ActorEvent(actor, true, 0));
-            }
-
-            for (int actor = 0; actor < ActorCount; actor++)
-            {
-                await actors[actor].FinalState.ConfigureAwait(false);
-            }
-        }
-
     }
 }
