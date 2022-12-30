@@ -118,12 +118,16 @@ namespace MetaFac.Threading.Tests
             }
         }
 
-        [Fact]
-        public async Task EventTypeIsValueType()
+        [Theory]
+        [InlineData(QueueImpl.UnboundedChannelQueue)]
+        [InlineData(QueueImpl.BoundedChannelQueue1K)]
+        [InlineData(QueueImpl.DisruptorQueue1K)]
+        public async Task EventTypeIsValueType(QueueImpl impl)
         {
+            var queueFactory = impl.GetFactory<long>();
             using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
             var handler = new NullHandler<long>((x) => x == 0L);
-            using (var queue = new EventProcessor<long>(cts.Token, handler))
+            using (var queue = new EventProcessor<long>(handler, queueFactory))
             {
 
                 await queue.EnqueueAsync(1L);
@@ -133,27 +137,31 @@ namespace MetaFac.Threading.Tests
             }
         }
 
-        [Fact]
-        public async Task EventTypeIsRefType()
+        [Theory]
+        [InlineData(QueueImpl.UnboundedChannelQueue)]
+        [InlineData(QueueImpl.BoundedChannelQueue1K)]
+        [InlineData(QueueImpl.DisruptorQueue1K)]
+        public async Task EventTypeIsRefType(QueueImpl impl)
         {
-            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+            var queueFactory = impl.GetFactory<string>();
             var handler = new NullHandler<string>((x) => x == string.Empty);
-            using (var queue = new EventProcessor<string>(cts.Token, handler))
+            using (var queue = new EventProcessor<string>(handler, queueFactory))
             {
-
                 await queue.EnqueueAsync("test");
                 await queue.EnqueueAsync(string.Empty);
-
                 var result = await handler.Task;
             }
         }
 
-        [Fact]
-        public async Task EventTypeIsEnumType()
+        [Theory]
+        [InlineData(QueueImpl.UnboundedChannelQueue)]
+        [InlineData(QueueImpl.BoundedChannelQueue1K)]
+        [InlineData(QueueImpl.DisruptorQueue1K)]
+        public async Task EventTypeIsEnumType(QueueImpl impl)
         {
-            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+            var queueFactory = impl.GetFactory<DayOfWeek>();
             var handler = new NullHandler<DayOfWeek>((x) => x == DayOfWeek.Sunday);
-            using (var queue = new EventProcessor<DayOfWeek>(cts.Token, handler))
+            using (var queue = new EventProcessor<DayOfWeek>(handler, queueFactory))
             {
 
                 await queue.EnqueueAsync(DayOfWeek.Monday);
@@ -163,14 +171,16 @@ namespace MetaFac.Threading.Tests
             }
         }
 
-        [Fact]
-        public async Task EnqueueEvents_ImmutableState()
+        [Theory]
+        [InlineData(QueueImpl.UnboundedChannelQueue)]
+        [InlineData(QueueImpl.BoundedChannelQueue1K)]
+        [InlineData(QueueImpl.DisruptorQueue1K)]
+        public async Task EnqueueEvents_ImmutableState(QueueImpl impl)
         {
+            var queueFactory = impl.GetFactory<Sample>();
             var handler = new ImmutableStatsHandler();
-            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
-            using (var queue = new EventProcessor<Sample>(cts.Token, handler))
+            using (var queue = new EventProcessor<Sample>(handler, queueFactory))
             {
-
                 for (int i = 0; i < 5; i++)
                 {
                     await queue.EnqueueAsync(new Sample((i + 1) * 2, i == 4));
@@ -185,12 +195,15 @@ namespace MetaFac.Threading.Tests
             }
         }
 
-        [Fact]
-        public async Task EnqueueEvents_MutableState()
+        [Theory]
+        [InlineData(QueueImpl.UnboundedChannelQueue)]
+        [InlineData(QueueImpl.BoundedChannelQueue1K)]
+        [InlineData(QueueImpl.DisruptorQueue1K)]
+        public async Task EnqueueEvents_MutableState(QueueImpl impl)
         {
+            var queueFactory = impl.GetFactory<Sample>();
             var handler = new MutableStatsHandler();
-            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
-            using (var queue = new EventProcessor<Sample>(cts.Token, handler))
+            using (var queue = new EventProcessor<Sample>(handler, queueFactory))
             {
 
                 for (int i = 0; i < 5; i++)
@@ -208,12 +221,15 @@ namespace MetaFac.Threading.Tests
         }
 
         [Theory]
-        [InlineData(1_000_000)]
-        public async Task EnqueueManyEvents(int iterations)
+        [InlineData(QueueImpl.UnboundedChannelQueue)]
+        [InlineData(QueueImpl.BoundedChannelQueue1K)]
+        [InlineData(QueueImpl.DisruptorQueue1K)]
+        public async Task EnqueueManyEvents(QueueImpl impl)
         {
+            var queueFactory = impl.GetFactory<Sample>();
+            const int iterations = 1_000_000;
             var handler = new ImmutableStatsHandler();
-            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
-            using (var queue = new EventProcessor<Sample>(cts.Token, handler))
+            using (var queue = new EventProcessor<Sample>(handler, queueFactory))
             {
 
                 for (int i = 0; i < iterations; i++)

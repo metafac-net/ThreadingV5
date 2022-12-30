@@ -19,6 +19,12 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MetaFac.Threading.Tests", "
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MetaFac.Threading.Benchmarks", "MetaFac.Threading.Benchmarks\MetaFac.Threading.Benchmarks.csproj", "{97D9C24C-4756-47B8-ADAE-0621A3200AC6}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MetaFac.Threading.Disruptor", "MetaFac.Threading.Disruptor\MetaFac.Threading.Disruptor.csproj", "{BFF01895-ECE2-445F-AE08-BEBE92C81306}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MetaFac.Threading.Core", "MetaFac.Threading.Core\MetaFac.Threading.Core.csproj", "{C2E0620D-1983-4132-BC71-24BC3A955E1A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MetaFac.Threading.Channels", "MetaFac.Threading.Channels\MetaFac.Threading.Channels.csproj", "{AAA58A4A-7155-4A87-92CD-92EDF0DA3308}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -37,6 +43,18 @@ Global
 		{97D9C24C-4756-47B8-ADAE-0621A3200AC6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{97D9C24C-4756-47B8-ADAE-0621A3200AC6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{97D9C24C-4756-47B8-ADAE-0621A3200AC6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BFF01895-ECE2-445F-AE08-BEBE92C81306}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BFF01895-ECE2-445F-AE08-BEBE92C81306}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BFF01895-ECE2-445F-AE08-BEBE92C81306}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BFF01895-ECE2-445F-AE08-BEBE92C81306}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C2E0620D-1983-4132-BC71-24BC3A955E1A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C2E0620D-1983-4132-BC71-24BC3A955E1A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C2E0620D-1983-4132-BC71-24BC3A955E1A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C2E0620D-1983-4132-BC71-24BC3A955E1A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AAA58A4A-7155-4A87-92CD-92EDF0DA3308}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AAA58A4A-7155-4A87-92CD-92EDF0DA3308}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AAA58A4A-7155-4A87-92CD-92EDF0DA3308}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AAA58A4A-7155-4A87-92CD-92EDF0DA3308}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

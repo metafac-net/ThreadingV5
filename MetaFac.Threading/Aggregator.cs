@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MetaFac.Threading.Core;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -16,9 +17,12 @@ namespace MetaFac.Threading
         public TState DirtyState => _state;
         public Task<TState> FinalState => _tcs.Task;
 
-        public Aggregator(CancellationToken token, TState initialState, Func<TState, TEvent, TState> eventHandler)
+        public Aggregator(
+            TState initialState, 
+            Func<TState, TEvent, TState> eventHandler,
+            Func<IQueueReader<TEvent>, IQueueWriter<TEvent>> queueFactory)
         {
-            _queue = new ChannelQueue<TEvent>(this, token);
+            _queue = queueFactory(this);
             _state = initialState;
             _eventHandler = eventHandler ?? throw new ArgumentNullException(nameof(eventHandler));
         }
@@ -26,6 +30,11 @@ namespace MetaFac.Threading
         public void Dispose()
         {
             _queue.Dispose();
+        }
+
+        public bool TryEnqueue(TEvent item)
+        {
+            return _queue.TryEnqueue(item);
         }
 
         public ValueTask EnqueueAsync(TEvent item)
@@ -36,6 +45,11 @@ namespace MetaFac.Threading
         public void Complete()
         {
             _queue.Complete();
+        }
+
+        public bool TryComplete()
+        {
+            return _queue.TryComplete();
         }
 
         public ValueTask OnDequeueAsync(TEvent item)

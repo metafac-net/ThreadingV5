@@ -38,9 +38,13 @@ namespace MetaFac.Threading
             {
                 return _valueTask(_input, _token);
             }
+            else if(_task is not null)
+            {
+                return new ValueTask<TOut>(_task(_input, _token));
+            }
             else
             {
-                return new ValueTask<TOut>(_task!(_input, _token));
+                return new ValueTask<TOut>();
             }
         }
     }

@@ -1,10 +1,10 @@
 ﻿using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Jobs;
 using BenchmarkDotNet.Order;
+using MetaFac.Threading.Channels;
+using MetaFac.Threading.Core;
 using System;
 using System.Linq;
-using System.Reactive;
-using System.Reactive.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -26,6 +26,11 @@ namespace MetaFac.Threading.Benchmarks
         [GlobalSetup]
         public void Setup()
         {
+        }
+
+        private static IQueueWriter<T> QueueFactory<T>(IQueueReader<T> observer)
+        {
+            return new UnboundedChannelQueue<T>(observer);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -51,7 +56,7 @@ namespace MetaFac.Threading.Benchmarks
         {
             using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
             var token = WithCancel ? cts.Token : CancellationToken.None;
-            using var queue = new ValueTaskQueue<int, int>(token);
+            using var queue = new ValueTaskQueue<int, int>(QueueFactory<ValueTaskItem<int,int>>, token);
 
             for (int i = 0; i < EventCount; i++)
             {
@@ -68,7 +73,7 @@ namespace MetaFac.Threading.Benchmarks
         {
             using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
             var token = WithCancel ? cts.Token : CancellationToken.None;
-            using var queue = new ValueTaskQueue<int, int>(token);
+            using var queue = new ValueTaskQueue<int, int>(QueueFactory<ValueTaskItem<int, int>>, token);
 
             var observers = new TaskCompletionSource<int>[EventCount];
             for (int i = 0; i < EventCount; i++)
@@ -86,7 +91,7 @@ namespace MetaFac.Threading.Benchmarks
         {
             using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
             var token = WithCancel ? cts.Token : CancellationToken.None;
-            using var queue = new ValueTaskQueue<int, int>(token);
+            using var queue = new ValueTaskQueue<int, int>(QueueFactory<ValueTaskItem<int, int>>, token);
 
             var parOptions = new ParallelOptions() { MaxDegreeOfParallelism = 2 };
             Parallel.For(1, EventCount, parOptions, async (i) =>
@@ -104,7 +109,7 @@ namespace MetaFac.Threading.Benchmarks
         {
             using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
             var token = WithCancel ? cts.Token : CancellationToken.None;
-            using var queue = new ValueTaskQueue<int, int>(token);
+            using var queue = new ValueTaskQueue<int, int>(QueueFactory<ValueTaskItem<int, int>>, token);
 
             var parOptions = new ParallelOptions() { MaxDegreeOfParallelism = 4 };
             Parallel.For(1, EventCount, parOptions, async (i) =>

@@ -1,47 +1,28 @@
-﻿using System;
+﻿using MetaFac.Threading.Core;
+using System;
 using System.Diagnostics;
 using System.Threading;
-using System.Threading.Channels;
 using System.Threading.Tasks;
 
 namespace MetaFac.Threading
 {
-    public sealed class ValueTaskQueue<TInp, TOut> : Disposable
+
+    public sealed class ValueTaskQueue<TInp, TOut> : Disposable, IQueueReader<ValueTaskItem<TInp, TOut>>
     {
-        private readonly struct ValueTaskItem
-        {
-            public readonly TInp Input;
-            public readonly CancellationToken Token;
-            public readonly TaskCompletionSource<TOut>? Completion;
-            public readonly Func<TInp, CancellationToken, ValueTask<TOut>> UserFunc;
-
-            public ValueTaskItem(TInp input, CancellationToken token, Func<TInp, CancellationToken, ValueTask<TOut>> userFunc, TaskCompletionSource<TOut>? completion = null)
-            {
-                Input = input;
-                Token = token;
-                Completion = completion;
-                UserFunc = userFunc;
-            }
-        }
-
         private readonly CancellationToken _shutdownToken;
-        private readonly Channel<ValueTaskItem> _channel;
-        private readonly ChannelWriter<ValueTaskItem> _writer;
+        private readonly IQueueWriter<ValueTaskItem<TInp, TOut>> _queue;
 
-        public ValueTaskQueue(CancellationToken shutdownToken)
+        public ValueTaskQueue(
+            Func<IQueueReader<ValueTaskItem<TInp, TOut>>, IQueueWriter<ValueTaskItem<TInp, TOut>>> queueFactory,
+            CancellationToken token)
         {
-            _shutdownToken = shutdownToken;
-            var options = new UnboundedChannelOptions() { SingleReader = true, };
-            _channel = Channel.CreateUnbounded<ValueTaskItem>(options);
-            _writer = _channel.Writer;
-
-            // launch single reader task
-            _ = Task.Factory.StartNew(ReadLoop);
+            _queue = queueFactory(this);
+            _shutdownToken = token;
         }
 
         protected override ValueTask OnDisposeAsync()
         {
-            _writer.TryComplete();
+            _queue.Dispose();
             return new ValueTask();
         }
 
@@ -57,12 +38,12 @@ namespace MetaFac.Threading
             }
             else
             {
-                ValueTaskItem item = new ValueTaskItem(input, token, func, completion);
-                await _writer.WriteAsync(item).ConfigureAwait(false);
+                ValueTaskItem<TInp, TOut> item = new ValueTaskItem<TInp, TOut>(input, token, func, completion);
+                await _queue.EnqueueAsync(item).ConfigureAwait(false);
             }
         }
 
-        private async ValueTask ExecuteItem(ValueTaskItem item)
+        private async ValueTask ExecuteItem(ValueTaskItem<TInp, TOut> item)
         {
             if (_shutdownToken.IsCancellationRequested)
             {
@@ -82,36 +63,14 @@ namespace MetaFac.Threading
             }
         }
 
-        private async ValueTask ReadLoop()
+        public ValueTask OnDequeueAsync(ValueTaskItem<TInp, TOut> item)
         {
-            var reader = _channel.Reader;
-#if NET5_0_OR_GREATER
-            await foreach (var item in reader.ReadAllAsync())
-            {
-                await ExecuteItem(item).ConfigureAwait(false);
-            }
-#else
-            bool reading = true;
-            while (reading)
-            {
-                try
-                {
-                    var item = await reader.ReadAsync().ConfigureAwait(false);
-                    await ExecuteItem(item).ConfigureAwait(false);
-                }
-                catch (ChannelClosedException)
-                {
-                    // expected
-                    reading = false;
-                }
-                catch (Exception e)
-                {
-                    Debug.WriteLine($"Unhandled {e.GetType().Name} : {e.Message}");
-                    reading = false;
-                }
-            }
-#endif
+            return ExecuteItem(item);
         }
 
+        public void OnComplete()
+        {
+            // not used
+        }
     }
 }

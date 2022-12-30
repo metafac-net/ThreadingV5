@@ -136,12 +136,15 @@ namespace MetaFac.Threading.Tests
             }
         }
 
-        [Fact]
-        public async Task TypesAreValueType()
+        [Theory]
+        [InlineData(QueueImpl.UnboundedChannelQueue)]
+        [InlineData(QueueImpl.BoundedChannelQueue1K)]
+        [InlineData(QueueImpl.DisruptorQueue1K)]
+        public async Task TypesAreValueType(QueueImpl impl)
         {
-            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+            var queueFactory = impl.GetFactory<int>();
             var machine = new NullHandler<long, int>((i) => i == 0);
-            using (var queue = new StateMachine<long, int>(cts.Token, machine, default))
+            using (var queue = new StateMachine<long, int>(default, machine, queueFactory))
             {
 
                 await queue.EnqueueAsync(1);
@@ -151,44 +154,48 @@ namespace MetaFac.Threading.Tests
             }
         }
 
-        [Fact]
-        public async Task TypesAreRefType()
+        [Theory]
+        [InlineData(QueueImpl.UnboundedChannelQueue)]
+        [InlineData(QueueImpl.BoundedChannelQueue1K)]
+        [InlineData(QueueImpl.DisruptorQueue1K)]
+        public async Task TypesAreRefType(QueueImpl impl)
         {
-            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+            var queueFactory = impl.GetFactory<string>();
             var machine = new NullHandler<string, string>((s) => string.IsNullOrEmpty(s));
-            using (var queue = new StateMachine<string, string>(cts.Token, machine, string.Empty))
+            using (var queue = new StateMachine<string, string>(string.Empty, machine, queueFactory))
             {
-
                 await queue.EnqueueAsync("1");
                 await queue.EnqueueAsync("");
-
                 await machine.Task;
             }
         }
 
-        [Fact]
-        public async Task TypesAreEnumType()
+        [Theory]
+        [InlineData(QueueImpl.UnboundedChannelQueue)]
+        [InlineData(QueueImpl.BoundedChannelQueue1K)]
+        [InlineData(QueueImpl.DisruptorQueue1K)]
+        public async Task TypesAreEnumType(QueueImpl impl)
         {
-            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+            var queueFactory = impl.GetFactory<string>();
             var machine = new NullHandler<DayOfWeek, string>((s) => string.IsNullOrEmpty(s));
-            using (var queue = new StateMachine<DayOfWeek, string>(cts.Token, machine, default))
+            using (var queue = new StateMachine<DayOfWeek, string>(default, machine, queueFactory))
             {
-
                 await queue.EnqueueAsync("1");
                 await queue.EnqueueAsync("");
-
                 var state = await machine.Task;
             }
         }
 
-        [Fact]
-        public async Task EnqueueEvents_ImmutableState()
+        [Theory]
+        [InlineData(QueueImpl.UnboundedChannelQueue)]
+        [InlineData(QueueImpl.BoundedChannelQueue1K)]
+        [InlineData(QueueImpl.DisruptorQueue1K)]
+        public async Task EnqueueEvents_ImmutableState(QueueImpl impl)
         {
-            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+            var queueFactory = impl.GetFactory<Sample>();
             var handler = new ImmutableStatsHandler((s) => s.Value == 0);
-            using (var queue = new StateMachine<ImmutableStatistics, Sample>(cts.Token, handler, ImmutableStatistics.Empty))
+            using (var queue = new StateMachine<ImmutableStatistics, Sample>(ImmutableStatistics.Empty, handler, queueFactory))
             {
-
                 for (int i = 0; i < 5; i++)
                 {
                     await queue.EnqueueAsync(new Sample((i + 1) * 2));
@@ -202,14 +209,16 @@ namespace MetaFac.Threading.Tests
             }
         }
 
-        [Fact]
-        public async Task EnqueueEvents_MutableState()
+        [Theory]
+        [InlineData(QueueImpl.UnboundedChannelQueue)]
+        [InlineData(QueueImpl.BoundedChannelQueue1K)]
+        [InlineData(QueueImpl.DisruptorQueue1K)]
+        public async Task EnqueueEvents_MutableState(QueueImpl impl)
         {
-            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+            var queueFactory = impl.GetFactory<Sample>();
             var handler = new MutableStatsHandler((s) => s.Value == 0);
-            using (var queue = new StateMachine<MutableStatistics, Sample>(cts.Token, handler, new MutableStatistics()))
+            using (var queue = new StateMachine<MutableStatistics, Sample>(new MutableStatistics(), handler, queueFactory))
             {
-
                 for (int i = 0; i < 5; i++)
                 {
                     await queue.EnqueueAsync(new Sample((i + 1) * 2));
@@ -231,11 +240,11 @@ namespace MetaFac.Threading.Tests
         [InlineData(100_000)]
         public async Task EnqueueManyEvents(int iterations)
         {
-            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+            QueueImpl impl = QueueImpl.UnboundedChannelQueue;
+            var queueFactory = impl.GetFactory<Sample>();
             var handler = new ImmutableStatsHandler((s) => s.Value == 0);
-            using (var queue = new StateMachine<ImmutableStatistics, Sample>(cts.Token, handler, ImmutableStatistics.Empty))
+            using (var queue = new StateMachine<ImmutableStatistics, Sample>(ImmutableStatistics.Empty, handler, queueFactory))
             {
-
                 for (int i = 1; i < iterations; i++)
                 {
                     await queue.EnqueueAsync(new Sample(i));

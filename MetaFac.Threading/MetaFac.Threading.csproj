@@ -6,8 +6,7 @@
     <WarningsAsErrors>nullable</WarningsAsErrors>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageRequireLicenseAcceptance>False</PackageRequireLicenseAcceptance>
-    <Description>Core threading types based on System.Threading.Channels: EventProcessor, StateMachine, ExecutionQueue and Sequencer - a scheduler that 
-    coordinates the execution of synchronous and asynchronous tasks using a hierarchical key that defines their relative concurrency.</Description>
+    <Description>Threading types: EventProcessor, StateMachine, ExecutionQueue and ValueTaskQueue.</Description>
     <Title>MetaFac.Threading</Title>
     <Company>MetaFac</Company>
     <Product>Threading</Product>
@@ -18,7 +17,7 @@
     <RepositoryType>Git</RepositoryType>
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
     <SignAssembly>true</SignAssembly>
-    <PackageTags>thread task sequencer scheduler coordinator labapps concurrency channels</PackageTags>
+    <PackageTags>thread task sequencer scheduler coordinator metafac concurrency channels disruptor</PackageTags>
     <Copyright>Copyright (c) 2022 MetaFac</Copyright>
     <LangVersion>latest</LangVersion>
     <AssemblyOriginatorKeyFile>..\SigningKey.snk</AssemblyOriginatorKeyFile>
@@ -40,9 +39,11 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="System.Reactive" Version="5.0.0" />
-    <PackageReference Include="System.Threading.Channels" Version="7.0.0" />
     <PackageReference Include="System.Threading.Tasks.Extensions" Version="4.5.4" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\MetaFac.Threading.Core\MetaFac.Threading.Core.csproj" />
   </ItemGroup>
 
 </Project>

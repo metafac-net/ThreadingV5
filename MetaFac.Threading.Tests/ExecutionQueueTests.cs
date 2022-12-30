@@ -26,11 +26,15 @@ namespace MetaFac.Threading.Tests
         }
 
         [Theory]
-        [InlineData(100_000)]
-        public async Task ExecuteSyncWorkItem(int iterations)
+        [InlineData(QueueImpl.UnboundedChannelQueue)]
+        [InlineData(QueueImpl.BoundedChannelQueue1K)]
+        [InlineData(QueueImpl.DisruptorQueue1K)]
+        public async Task ExecuteSyncWorkItem(QueueImpl impl)
         {
+            var queueFactory = impl.GetFactory<IExecutable>();
+            const int iterations = 100_000;
             var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
-            using (var queue = new ExecutionQueue<IExecutable>(cts.Token))
+            using (var queue = new ExecutionQueue<IExecutable>(queueFactory, cts.Token))
             {
                 for (int i = 0; i < iterations; i++)
                 {
@@ -52,11 +56,15 @@ namespace MetaFac.Threading.Tests
             protected override ValueTask<bool> OnExecuteAsync() => throw new ApplicationException("I'm a bad app!");
         }
 
-        [Fact]
-        public async Task ExecuteFailingWorkItem()
+        [Theory]
+        [InlineData(QueueImpl.UnboundedChannelQueue)]
+        [InlineData(QueueImpl.BoundedChannelQueue1K)]
+        [InlineData(QueueImpl.DisruptorQueue1K)]
+        public async Task ExecuteFailingWorkItem(QueueImpl impl)
         {
+            var queueFactory = impl.GetFactory<WorkItem_Fail>();
             var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
-            using (var queue = new ExecutionQueue<WorkItem_Fail>(cts.Token))
+            using (var queue = new ExecutionQueue<WorkItem_Fail>(queueFactory, cts.Token))
             {
                 var workItem = new WorkItem_Fail(false);
                 await queue.EnqueueAsync(workItem);
@@ -120,6 +128,9 @@ namespace MetaFac.Threading.Tests
         public async Task ExecuteCustomWorkItems(bool waitParallel, bool waitAfterDispose)
         {
             const int iterations = 10;
+
+            var queueFactory = QueueImpl.UnboundedChannelQueue.GetFactory<CustomWorkItem>();
+
             var goodCount = 0;
             var failCount = 0;
             var workItems = new CustomWorkItem[iterations];
@@ -158,7 +169,7 @@ namespace MetaFac.Threading.Tests
 
             var timeout = Debugger.IsAttached ? TimeSpan.FromSeconds(300) : TimeSpan.FromSeconds(10);
             var cts = new CancellationTokenSource(timeout);
-            var queue = new ExecutionQueue<CustomWorkItem>(cts.Token);
+            var queue = new ExecutionQueue<CustomWorkItem>(queueFactory, cts.Token);
             try
             {
                 for (int i = 0; i < iterations; i++)

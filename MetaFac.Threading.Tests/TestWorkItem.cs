@@ -12,7 +12,7 @@ namespace MetaFac.Threading.Tests
 
         protected override ValueTask<bool> OnExecuteAsync()
         {
-            return new ValueTask<bool>(true);
+            return new ValueTask<bool>(!_token.IsCancellationRequested);
         }
     }
 

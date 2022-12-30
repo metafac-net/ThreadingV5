@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MetaFac.Threading.Core;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -6,20 +7,25 @@ namespace MetaFac.Threading
 {
     public sealed class EventProcessor<TEvent> : IQueueWriter<TEvent>, IQueueReader<TEvent>
     {
-        private readonly CancellationToken _shutdownToken;
         private readonly IQueueWriter<TEvent> _queue;
         private readonly IEventHandler<TEvent> _handler;
 
-        public EventProcessor(CancellationToken shutdownToken, IEventHandler<TEvent> handler)
+        public EventProcessor(
+            IEventHandler<TEvent> handler,
+            Func<IQueueReader<TEvent>, IQueueWriter<TEvent>> queueFactory)
         {
-            _shutdownToken = shutdownToken;
-            _queue = new ChannelQueue<TEvent>(this, _shutdownToken);
+            _queue = queueFactory(this);
             _handler = handler ?? throw new ArgumentNullException(nameof(handler));
         }
 
         public void Dispose()
         {
             _queue.Dispose();
+        }
+
+        public bool TryEnqueue(TEvent item)
+        {
+            return _queue.TryEnqueue(item);
         }
 
         public ValueTask EnqueueAsync(TEvent item)
@@ -32,16 +38,14 @@ namespace MetaFac.Threading
             _queue.Complete();
         }
 
+        public bool TryComplete()
+        {
+            return _queue.TryComplete();
+        }
+
         public ValueTask OnDequeueAsync(TEvent item)
         {
-            if (_shutdownToken.IsCancellationRequested)
-            {
-                _handler.CancelEvent(item);
-            }
-            else
-            {
-                _handler.HandleEvent(item);
-            }
+            _handler.HandleEvent(item);
             return new ValueTask();
         }
 

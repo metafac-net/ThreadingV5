@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MetaFac.Threading.Core;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -9,18 +10,25 @@ namespace MetaFac.Threading
         private readonly IQueueWriter<TEvent> _queue;
         private readonly IStateEventHandler<TState, TEvent> _handler;
         private TState _currentState;
-        //public TState Snapshot => _currentState;
 
-        public StateMachine(CancellationToken token, IStateEventHandler<TState, TEvent> handler, TState initialState)
+        public StateMachine(
+            TState initialState, 
+            IStateEventHandler<TState, TEvent> handler,
+            Func<IQueueReader<TEvent>, IQueueWriter<TEvent>> queueFactory)
         {
-            _queue = new ChannelQueue<TEvent>(this, token);
-            _handler = handler ?? throw new ArgumentNullException(nameof(handler));
+            _queue = queueFactory(this);
             _currentState = initialState;
+            _handler = handler ?? throw new ArgumentNullException(nameof(handler));
         }
 
         public void Dispose()
         {
             _queue.Dispose();
+        }
+
+        public bool TryEnqueue(TEvent item)
+        {
+            return _queue.TryEnqueue(item);
         }
 
         public ValueTask EnqueueAsync(TEvent item)
@@ -31,6 +39,11 @@ namespace MetaFac.Threading
         public void Complete()
         {
             _queue.Complete();
+        }
+
+        public bool TryComplete()
+        {
+            return _queue.TryComplete();
         }
 
         public ValueTask OnDequeueAsync(TEvent item)

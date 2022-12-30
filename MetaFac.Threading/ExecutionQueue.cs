@@ -1,52 +1,22 @@
-﻿using System;
+﻿using MetaFac.Threading.Core;
+using System;
 using System.Diagnostics;
 using System.Threading;
-using System.Threading.Channels;
 using System.Threading.Tasks;
 
 namespace MetaFac.Threading
 {
-    public sealed class ExecutionQueue<T> : Disposable, IExecutionQueue<T>
+    internal sealed class ExecutionQueueReader<T> : Disposable, IQueueReader<T>
         where T : class, IExecutable
     {
         private readonly CancellationToken _shutdownToken;
-        private readonly Channel<T> _channel;
-        private readonly ChannelWriter<T> _writer;
 
-        public ExecutionQueue(CancellationToken shutdownToken)
+        public ExecutionQueueReader(CancellationToken shutdownToken)
         {
             _shutdownToken = shutdownToken;
-            var options = new UnboundedChannelOptions() { SingleReader = true, };
-            _channel = Channel.CreateUnbounded<T>(options);
-            _writer = _channel.Writer;
-
-            // launch single reader task
-            _ = Task.Factory.StartNew(EventHandler);
         }
 
-        protected override ValueTask OnDisposeAsync()
-        {
-            _writer.TryComplete();
-            return new ValueTask();
-        }
-
-        public async ValueTask EnqueueAsync(T item)
-        {
-            if (_shutdownToken.IsCancellationRequested || IsDisposed)
-            {
-                try
-                {
-                    await item.DisposeAsync().ConfigureAwait(false);
-                }
-                catch (Exception)
-                {
-                }
-            }
-            else
-            {
-                await _writer.WriteAsync(item).ConfigureAwait(false);
-            }
-        }
+        protected override ValueTask OnDisposeAsync() => new ValueTask();
 
         private async ValueTask ExecuteItem(T item)
         {
@@ -66,36 +36,33 @@ namespace MetaFac.Threading
             }
         }
 
-        private async ValueTask EventHandler()
+        public void OnComplete() { }
+        public ValueTask OnDequeueAsync(T item)
         {
-            var reader = _channel.Reader;
-#if NET5_0_OR_GREATER
-            await foreach (var item in reader.ReadAllAsync())
-            {
-                await ExecuteItem(item).ConfigureAwait(false);
-            }
-#else
-            bool reading = true;
-            while (reading)
-            {
-                try
-                {
-                    var item = await reader.ReadAsync().ConfigureAwait(false);
-                    await ExecuteItem(item).ConfigureAwait(false);
-                }
-                catch (ChannelClosedException)
-                {
-                    // expected
-                    reading = false;
-                }
-                catch (Exception e)
-                {
-                    Debug.WriteLine($"Unhandled {e.GetType().Name} : {e.Message}");
-                    reading = false;
-                }
-            }
-#endif
+            return ExecuteItem(item);
+        }
+    }
+
+    public sealed class ExecutionQueue<T> : Disposable, IQueueWriter<T>
+        where T : class, IExecutable
+    {
+        private readonly IQueueWriter<T> _queue;
+
+        public ExecutionQueue(Func<IQueueReader<T>, IQueueWriter<T>> queueFactory, CancellationToken shutdownToken)
+        {
+            var reader = new ExecutionQueueReader<T>(shutdownToken);
+            _queue = queueFactory(reader);
         }
 
+        protected override ValueTask OnDisposeAsync()
+        {
+            _queue.Dispose();
+            return new ValueTask();
+        }
+
+        public ValueTask EnqueueAsync(T item) => _queue.EnqueueAsync(item);
+        public bool TryEnqueue(T item) => _queue.TryEnqueue(item);
+        public void Complete() => _queue.Complete();
+        public bool TryComplete() => _queue.TryComplete();
     }
 }

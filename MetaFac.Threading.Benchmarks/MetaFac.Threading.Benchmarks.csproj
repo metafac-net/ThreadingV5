@@ -2,18 +2,19 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFrameworks>net6.0</TargetFrameworks>
+    <TargetFrameworks>net7.0</TargetFrameworks>
     <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
     <WarningsAsErrors>nullable</WarningsAsErrors>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="BenchmarkDotNet" Version="0.13.2" />
-    <PackageReference Include="System.Reactive" Version="5.0.0" />
+    <PackageReference Include="BenchmarkDotNet" Version="0.13.3" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\MetaFac.Threading.Channels\MetaFac.Threading.Channels.csproj" />
+    <ProjectReference Include="..\MetaFac.Threading.Disruptor\MetaFac.Threading.Disruptor.csproj" />
     <ProjectReference Include="..\MetaFac.Threading\MetaFac.Threading.csproj" />
   </ItemGroup>
 

@@ -21,11 +21,15 @@ namespace MetaFac.Threading.Tests
         }
 
         [Theory]
-        [InlineData(100_000)]
-        public async Task ExecuteSyncWorkItem(int iterations)
+        [InlineData(QueueImpl.UnboundedChannelQueue)]
+        [InlineData(QueueImpl.BoundedChannelQueue1K)]
+        [InlineData(QueueImpl.DisruptorQueue1K)]
+        public async Task ExecuteSyncWorkItem(QueueImpl impl)
         {
+            var queueFactory = impl.GetFactory<ValueTaskItem<bool,bool>>();
+            const int iterations = 100_000;
             var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
-            using (var queue = new ValueTaskQueue<bool,bool>(cts.Token))
+            using (var queue = new ValueTaskQueue<bool,bool>(queueFactory, cts.Token))
             {
                 for (int i = 0; i < iterations; i++)
                 {
@@ -46,11 +50,15 @@ namespace MetaFac.Threading.Tests
             throw new ApplicationException("I'm a bad app!");
         }
 
-        [Fact]
-        public async Task ExecuteFailingWorkItem()
+        [Theory]
+        [InlineData(QueueImpl.UnboundedChannelQueue)]
+        [InlineData(QueueImpl.BoundedChannelQueue1K)]
+        [InlineData(QueueImpl.DisruptorQueue1K)]
+        public async Task ExecuteFailingWorkItem(QueueImpl impl)
         {
+            var queueFactory = impl.GetFactory<ValueTaskItem<bool, bool>>();
             var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
-            using (var queue = new ValueTaskQueue<bool,bool>(cts.Token))
+            using (var queue = new ValueTaskQueue<bool,bool>(queueFactory, cts.Token))
             {
                 var observer = new TaskCompletionSource<bool>();
                 await queue.EnqueueAsync(false, cts.Token, FailTask, observer);
@@ -71,6 +79,10 @@ namespace MetaFac.Threading.Tests
         public async Task ExecuteCustomWorkItems(bool waitParallel, bool waitAfterDispose)
         {
             const int iterations = 10;
+
+            QueueImpl impl = QueueImpl.UnboundedChannelQueue;
+            var queueFactory = impl.GetFactory<ValueTaskItem<bool, bool>>();
+
             var goodCount = 0;
             var failCount = 0;
             var observers = new TaskCompletionSource<bool>[iterations];
@@ -107,7 +119,7 @@ namespace MetaFac.Threading.Tests
 
             var timeout = Debugger.IsAttached ? TimeSpan.FromSeconds(300) : TimeSpan.FromSeconds(10);
             var cts = new CancellationTokenSource(timeout);
-            var queue = new ValueTaskQueue<bool,bool>(cts.Token);
+            var queue = new ValueTaskQueue<bool,bool>(queueFactory, cts.Token);
             try
             {
                 for (int i = 0; i < iterations; i++)

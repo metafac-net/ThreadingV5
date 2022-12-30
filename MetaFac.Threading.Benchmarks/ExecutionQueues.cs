@@ -1,10 +1,9 @@
 ﻿using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Jobs;
 using BenchmarkDotNet.Order;
+using MetaFac.Threading.Channels;
+using MetaFac.Threading.Core;
 using System;
-using System.Linq;
-using System.Reactive;
-using System.Reactive.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -26,6 +25,11 @@ namespace MetaFac.Threading.Benchmarks
         [GlobalSetup]
         public void Setup()
         {
+        }
+
+        private static IQueueWriter<T> QueueFactory<T>(IQueueReader<T> observer)
+        {
+            return new UnboundedChannelQueue<T>(observer);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -51,7 +55,7 @@ namespace MetaFac.Threading.Benchmarks
         {
             using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
             var token = WithCancel ? cts.Token : CancellationToken.None;
-            using var queue = new ExecutionQueue<IExecutable>(token);
+            using var queue = new ExecutionQueue<IExecutable>(QueueFactory<IExecutable>, cts.Token);
 
             for (int i = 0; i < EventCount; i++)
             {
@@ -68,7 +72,7 @@ namespace MetaFac.Threading.Benchmarks
         {
             using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
             var token = WithCancel ? cts.Token : CancellationToken.None;
-            using var queue = new ExecutionQueue<IExecutable>(token);
+            using var queue = new ExecutionQueue<IExecutable>(QueueFactory<IExecutable>, token);
 
             var tasks = new Task<int>[EventCount];
             for (int i = 0; i < EventCount; i++)
@@ -86,7 +90,7 @@ namespace MetaFac.Threading.Benchmarks
         {
             using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
             var token = WithCancel ? cts.Token : CancellationToken.None;
-            using var queue = new ExecutionQueue<IExecutable>(token);
+            using var queue = new ExecutionQueue<IExecutable>(QueueFactory<IExecutable>, token);
 
             for (int i = 0; i < EventCount; i++)
             {
@@ -103,7 +107,7 @@ namespace MetaFac.Threading.Benchmarks
         {
             using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
             var token = WithCancel ? cts.Token : CancellationToken.None;
-            using var queue = new ExecutionQueue<IExecutable>(token);
+            using var queue = new ExecutionQueue<IExecutable>(QueueFactory<IExecutable>, token);
 
             for (int i = 0; i < EventCount; i++)
             {

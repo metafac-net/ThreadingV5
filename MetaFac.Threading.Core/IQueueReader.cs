@@ -1,8 +1,7 @@
 ﻿using System;
-using System.Threading;
 using System.Threading.Tasks;
 
-namespace MetaFac.Threading
+namespace MetaFac.Threading.Core
 {
     public interface IQueueReader<in T> : IDisposable
     {

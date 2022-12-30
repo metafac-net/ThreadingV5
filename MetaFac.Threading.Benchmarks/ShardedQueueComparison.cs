@@ -1,6 +1,7 @@
 ﻿using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Jobs;
-using System.Reactive.Concurrency;
+using MetaFac.Threading.Channels;
+using MetaFac.Threading.Core;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -8,26 +9,26 @@ namespace MetaFac.Threading.Benchmarks
 {
     [MemoryDiagnoser]
     [SimpleJob(RuntimeMoniker.Net70)]
-    [Orderer(BenchmarkDotNet.Order.SummaryOrderPolicy.FastestToSlowest)]
+    [Orderer(BenchmarkDotNet.Order.SummaryOrderPolicy.SlowestToFastest)]
     public class ShardedQueueComparison
     {
-        //[Params(1 * 1024 * 1024)]
-        const int EventCount = 1 * 1024 * 1024;
-
-        //[Params(64, 256, 1024)]
-        //[Params(1024)]
+        const int EventCount = 2 * 1024 * 1024;
         const int ActorCount = 1024;
 
-        //[Params(4, 16, 64, 256)]
-        [Params(4, 8, 16, 32, 64)]
+        [Params(4, 5, 6, 7, 8)]
         public int Shards;
 
-        [Params(1, 2, 4, 8)]
-        public int InParallelism;
+        [Params(1, 2, 3, 4, 5)]
+        public int Clients;
 
         [GlobalSetup]
         public void GlobalSetup()
         {
+        }
+
+        private static IQueueWriter<T> QueueFactory<T>(IQueueReader<T> observer)
+        {
+            return new UnboundedChannelQueue<T>(observer);
         }
 
         [Benchmark(OperationsPerInvoke = EventCount)]
@@ -40,17 +41,25 @@ namespace MetaFac.Threading.Benchmarks
             }
             ShardObserver observer = new ShardObserver(actors);
 
-            using var subjectPool = new ShardPool<ChannelQueue<ActorEvent>, ActorEvent>(
-                () => new ChannelQueue<ActorEvent>(observer, CancellationToken.None),
-                Shards);
+            using var subjectPool = new ShardPool<ActorEvent>(QueueFactory<ActorEvent>, observer, Shards);
 
-            ParallelOptions options = new ParallelOptions() { MaxDegreeOfParallelism = InParallelism };
-            Parallel.For(0, EventCount, options, (i) =>
+            if (Clients == 1)
             {
-                int actor = i % ActorCount;
-                subjectPool.EnqueueAsync(actor, new ActorEvent(actor, false, i))
-                .ConfigureAwait(false).GetAwaiter().GetResult();
-            });
+                for (int i = 0; i < EventCount; i++)
+                {
+                    int actor = i % ActorCount;
+                    bool sent = subjectPool.TryEnqueue(actor, new ActorEvent(actor, false, i));
+                }
+            }
+            else
+            {
+                ParallelOptions options = new ParallelOptions() { MaxDegreeOfParallelism = Clients };
+                Parallel.For(0, EventCount, options, (i) =>
+                {
+                    int actor = i % ActorCount;
+                    bool sent = subjectPool.TryEnqueue(actor, new ActorEvent(actor, false, i));
+                });
+            }
 
             for (int actor = 0; actor < ActorCount; actor++)
             {

@@ -1,4 +1,5 @@
 ﻿using BenchmarkDotNet.Running;
+using System.Reflection;
 
 namespace MetaFac.Threading.Benchmarks
 {
@@ -7,7 +8,7 @@ namespace MetaFac.Threading.Benchmarks
     {
         static void Main(string[] args)
         {
-            BenchmarkRunner.Run<ValueTaskQueues>();
+            BenchmarkSwitcher.FromAssembly(Assembly.GetExecutingAssembly()).Run();
         }
     }
 }

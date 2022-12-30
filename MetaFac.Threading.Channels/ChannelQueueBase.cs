@@ -1,26 +1,22 @@
-﻿using System;
+﻿using MetaFac.Threading.Core;
+using System;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
 
-namespace MetaFac.Threading
+namespace MetaFac.Threading.Channels
 {
-
-    public sealed class ChannelQueue<T> : Disposable, IQueueWriter<T>
+    public abstract class ChannelQueueBase<T> : Disposable, IQueueWriter<T>
     {
-        private readonly CancellationToken _shutdownToken;
         private readonly IQueueReader<T> _observer;
         private readonly ChannelReader<T> _reader;
         private readonly ChannelWriter<T> _writer;
 
-        public ChannelQueue(IQueueReader<T> observer, CancellationToken shutdownToken)
+        protected ChannelQueueBase(IQueueReader<T> observer, Channel<T> channel)
         {
             _observer = observer ?? throw new ArgumentNullException(nameof(observer));
-            _shutdownToken = shutdownToken;
 
-            var options = new UnboundedChannelOptions() { SingleReader = true, };
-            var channel = Channel.CreateUnbounded<T>(options);
             _reader = channel.Reader;
             _writer = channel.Writer;
 
@@ -28,25 +24,30 @@ namespace MetaFac.Threading
             _ = Task.Factory.StartNew(EventHandler);
         }
 
-        protected override ValueTask OnDisposeAsync()
+        protected sealed override ValueTask OnDisposeAsync()
         {
             Complete();
             return new ValueTask();
         }
 
-        private volatile bool _complete;
         public void Complete()
         {
-            if (_complete) return;
-            _complete = true;
             _writer.TryComplete();
+        }
+
+        public bool TryComplete()
+        {
+            return _writer.TryComplete();
+        }
+
+        public bool TryEnqueue(T item)
+        {
+            return _writer.TryWrite(item);
         }
 
         public async ValueTask EnqueueAsync(T item)
         {
             ThrowIfDisposed();
-            _shutdownToken.ThrowIfCancellationRequested();
-            if (_complete) throw new InvalidOperationException();
             await _writer.WriteAsync(item).ConfigureAwait(false);
         }
 
@@ -77,7 +78,7 @@ namespace MetaFac.Threading
         private async ValueTask EventHandler()
         {
 #if NET5_0_OR_GREATER
-            await foreach (var item in _reader.ReadAllAsync(_shutdownToken))
+            await foreach (var item in _reader.ReadAllAsync())
             {
                 await OnObserverEvent(item).ConfigureAwait(false);
             }
@@ -87,7 +88,7 @@ namespace MetaFac.Threading
             {
                 try
                 {
-                    T item = await _reader.ReadAsync(_shutdownToken).ConfigureAwait(false);
+                    T item = await _reader.ReadAsync().ConfigureAwait(false);
                     await OnObserverEvent(item).ConfigureAwait(false);
                 }
                 catch (ChannelClosedException)

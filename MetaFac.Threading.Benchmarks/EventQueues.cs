@@ -1,25 +1,51 @@
 ﻿using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Jobs;
 using BenchmarkDotNet.Order;
+using MetaFac.Threading.Channels;
+using MetaFac.Threading.Core;
+using MetaFac.Threading.Disruptor;
 using System;
-using System.Linq;
-using System.Reactive.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace MetaFac.Threading.Benchmarks
 {
+    public enum QueueImpl
+    {
+        UnboundedChannel,
+        BoundedChannel1K,
+        Disruptor1K,
+    }
+
+    internal static class QueueImplementationHelper
+    {
+        public static Func<IQueueReader<T>, IQueueWriter<T>> GetFactory<T>(this QueueImpl impl)
+        {
+            switch (impl)
+            {
+                case QueueImpl.UnboundedChannel:
+                    return (reader) => new UnboundedChannelQueue<T>(reader);
+                case QueueImpl.BoundedChannel1K:
+                    return (reader) => new BoundedChannelQueue<T>(reader, 1024);
+                case QueueImpl.Disruptor1K:
+                    return (reader) => new DisruptorQueue<T>(reader, 1024);
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(impl), impl, null);
+            }
+        }
+    }
+
 
     [MemoryDiagnoser]
-    [SimpleJob(RuntimeMoniker.Net60)]
-    //[SimpleJob(RuntimeMoniker.Net70)]
+    //[SimpleJob(RuntimeMoniker.Net60)]
+    [SimpleJob(RuntimeMoniker.Net70)]
     [Orderer(SummaryOrderPolicy.FastestToSlowest)]
     public class EventQueues
     {
         private const int EventCount = 1_000_000;
 
-        [Params(false, true)]
-        public bool WithCancel;
+        [Params(QueueImpl.UnboundedChannel, QueueImpl.BoundedChannel1K, QueueImpl.Disruptor1K)]
+        public QueueImpl QueueType;
 
         [GlobalSetup]
         public void Setup()
@@ -85,10 +111,9 @@ namespace MetaFac.Threading.Benchmarks
         [Benchmark(Baseline = true, OperationsPerInvoke = EventCount)]
         public async Task EventProcessor()
         {
-            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
-            var token = WithCancel ? cts.Token : CancellationToken.None;
             var handler = new EventHandler();
-            using var queue = new EventProcessor<Event>(token, handler);
+            var queueFactory = QueueType.GetFactory<Event>();
+            using var queue = new EventProcessor<Event>(handler, queueFactory);
 
             for (int i = 0; i < EventCount; i++)
             {
@@ -102,10 +127,9 @@ namespace MetaFac.Threading.Benchmarks
         [Benchmark(OperationsPerInvoke = EventCount)]
         public async Task StateMachine()
         {
-            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
-            var token = WithCancel ? cts.Token : CancellationToken.None;
             var state = new State();
-            using var queue = new StateMachine<State, Event>(token, new StateEventHandler(), state);
+            var queueFactory = QueueType.GetFactory<Event>();
+            using var queue = new StateMachine<State, Event>(state, new StateEventHandler(), queueFactory);
 
             for (int i = 0; i < EventCount; i++)
             {
@@ -134,9 +158,8 @@ namespace MetaFac.Threading.Benchmarks
         [Benchmark(OperationsPerInvoke = EventCount)]
         public async Task Aggregator()
         {
-            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
-            var token = WithCancel ? cts.Token : CancellationToken.None;
-            var aggregator = new Aggregator<long, int>(token, 0L, (s, e) => s + e);
+            var queueFactory = QueueType.GetFactory<int>();
+            var aggregator = new Aggregator<long, int>(0L, (s, e) => s + e, queueFactory);
 
             Parallel.For(1, EventCount, async (i) =>
             {
@@ -147,30 +170,6 @@ namespace MetaFac.Threading.Benchmarks
             aggregator.Complete();
 
             long result = await aggregator.FinalState.ConfigureAwait(false);
-        }
-
-        [Benchmark(OperationsPerInvoke = EventCount)]
-        public async Task Sequencer_L1()
-        {
-            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
-            var token = WithCancel ? cts.Token : CancellationToken.None;
-            var sequencer = new Sequencer(token);
-
-            Parallel.For(0, EventCount, (i) =>
-            {
-                int[] sequencerKeys = new int[] { i };
-                var item = new ExecutableItem<int, int>(i, token, DoWork);
-                sequencer
-                    .SequenceWorkItemAsync(sequencerKeys, item)
-                    .ConfigureAwait(false)
-                    .GetAwaiter()
-                    .GetResult();
-            });
-
-            var lastItem = new ExecutableItem<int, int>(EventCount, token, DoWork);
-            await sequencer.SequenceWorkItemAsync(new int[0], lastItem).ConfigureAwait(false);
-
-            int result = await lastItem.GetTask().ConfigureAwait(false);
         }
 
     }

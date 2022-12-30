@@ -1,7 +1,6 @@
 ﻿using FluentAssertions;
+using MetaFac.Threading.Core;
 using System;
-using System.Reactive.Concurrency;
-using System.Reactive.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
@@ -69,9 +68,14 @@ namespace MetaFac.Threading.Tests
             }
         }
 
-        [Fact]
-        public async Task ShardPool_ChannelQueue()
+        [Theory]
+        [InlineData(QueueImpl.UnboundedChannelQueue)]
+        [InlineData(QueueImpl.BoundedChannelQueue1K)]
+        [InlineData(QueueImpl.DisruptorQueue1K)]
+        public async Task ShardPool_ChannelQueue(QueueImpl impl)
         {
+            var queueFactory = impl.GetFactory<ActorEvent>();
+
             const int ActorCount = 10;
             const int MaxThreads = 4;
             const int EventCount = 1000;
@@ -81,9 +85,7 @@ namespace MetaFac.Threading.Tests
                 actors[a] = new StatefulObserver<long, int>(0L, (s, e) => s + e);
             }
             var observer = new ShardObserver(actors);
-            using var subjectPool = new ShardPool<ChannelQueue<ActorEvent>, ActorEvent>(
-                () => new ChannelQueue<ActorEvent>(observer, CancellationToken.None),
-                MaxThreads);
+            using var subjectPool = new ShardPool<ActorEvent>(queueFactory, observer, MaxThreads);
 
             Parallel.For(0, EventCount, async (i) =>
             {

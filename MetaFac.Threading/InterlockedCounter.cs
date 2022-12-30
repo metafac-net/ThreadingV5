@@ -19,12 +19,7 @@ namespace MetaFac.Threading
         public void Add(long value)
         {
             Interlocked.Add(ref _count, value);
-            var parent = _parent;
-            while (!(parent is null))
-            {
-                Interlocked.Add(ref parent._count, value);
-                parent = parent._parent;
-            }
+            _parent?.Add(value);
         }
     }
 }
