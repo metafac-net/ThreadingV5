@@ -18,7 +18,7 @@
 		<PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
 		<SignAssembly>true</SignAssembly>
 		<PackageTags>thread task sequencer scheduler coordinator metafac concurrency channels disruptor</PackageTags>
-		<Copyright>Copyright (c) 2022 MetaFac</Copyright>
+		<Copyright>Copyright (c) 2020-2023 MetaFac</Copyright>
 		<LangVersion>latest</LangVersion>
 		<AssemblyOriginatorKeyFile>..\SigningKey.snk</AssemblyOriginatorKeyFile>
 		<IncludeSymbols>true</IncludeSymbols>
