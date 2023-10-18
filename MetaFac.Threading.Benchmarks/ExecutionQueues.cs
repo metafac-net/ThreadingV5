@@ -44,10 +44,9 @@ namespace MetaFac.Threading.Benchmarks
             return new ValueTask<int>(input * input);
         }
 
-        private static async Task<int> DoTask(int input, CancellationToken token)
+        private static Task<int> DoTask(int input, CancellationToken token)
         {
-            await Task.Delay(0);
-            return input * input;
+            return Task.FromResult(input * input);
         }
 
         [Benchmark(Baseline = true, OperationsPerInvoke = EventCount)]
