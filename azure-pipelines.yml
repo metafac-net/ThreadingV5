@@ -25,6 +25,13 @@ steps:
     version: '7.x'
     includePreviewVersions: true
     
+- task: UseDotNet@2
+  displayName: 'Use .NET 8.x'
+  inputs:
+    packageType: 'sdk'
+    version: '8.x'
+    includePreviewVersions: true
+    
 - script: dotnet build --configuration $(buildConfiguration)
   displayName: 'dotnet build $(buildConfiguration)'
 
