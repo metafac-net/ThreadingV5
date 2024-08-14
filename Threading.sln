@@ -6,7 +6,7 @@ MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{53FD5EF6-9EA6-482C-91EB-AE698F39B23B}"
 	ProjectSection(SolutionItems) = preProject
 		.gitignore = .gitignore
-		azure-pipelines.yml = azure-pipelines.yml
+		.github\workflows\dotnet.yml = .github\workflows\dotnet.yml
 		projscan.json = projscan.json
 		README.md = README.md
 		SigningKey.snk = SigningKey.snk
@@ -21,9 +21,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MetaFac.Threading.Benchmark
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MetaFac.Threading.Disruptor", "MetaFac.Threading.Disruptor\MetaFac.Threading.Disruptor.csproj", "{BFF01895-ECE2-445F-AE08-BEBE92C81306}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MetaFac.Threading.Core", "MetaFac.Threading.Core\MetaFac.Threading.Core.csproj", "{C2E0620D-1983-4132-BC71-24BC3A955E1A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MetaFac.Threading.Core", "MetaFac.Threading.Core\MetaFac.Threading.Core.csproj", "{C2E0620D-1983-4132-BC71-24BC3A955E1A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MetaFac.Threading.Channels", "MetaFac.Threading.Channels\MetaFac.Threading.Channels.csproj", "{AAA58A4A-7155-4A87-92CD-92EDF0DA3308}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MetaFac.Threading.Channels", "MetaFac.Threading.Channels\MetaFac.Threading.Channels.csproj", "{AAA58A4A-7155-4A87-92CD-92EDF0DA3308}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

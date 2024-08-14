@@ -12,13 +12,13 @@
     <Product>Threading</Product>
     <PackageLicenseUrl></PackageLicenseUrl>
     <Authors>MetaFac Contributors</Authors>
-    <PackageProjectUrl>https://dev.azure.com/MetaFac/OSR</PackageProjectUrl>
-    <RepositoryUrl>https://dev.azure.com/MetaFac/OSR/_git/Threading</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/metafac-net/Threading</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/metafac-net/Threading</RepositoryUrl>
     <RepositoryType>Git</RepositoryType>
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
     <SignAssembly>true</SignAssembly>
     <PackageTags>thread task sequencer scheduler coordinator metafac concurrency channels lmax disruptor</PackageTags>
-    <Copyright>Copyright (c) 2020-2023 MetaFac</Copyright>
+    <Copyright>Copyright (c) 2020-2024 MetaFac</Copyright>
 	<LangVersion>latest</LangVersion>
     <AssemblyOriginatorKeyFile>..\SigningKey.snk</AssemblyOriginatorKeyFile>
     <IncludeSymbols>true</IncludeSymbols>
