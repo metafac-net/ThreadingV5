@@ -13,7 +13,7 @@ namespace MetaFac.Threading.Benchmarks
     [MemoryDiagnoser]
     //[SimpleJob(RuntimeMoniker.Net481)]
     //[SimpleJob(RuntimeMoniker.Net60)]
-    [SimpleJob(RuntimeMoniker.Net70)]
+    [SimpleJob(RuntimeMoniker.Net80)]
     [Orderer(SummaryOrderPolicy.FastestToSlowest)]
     public class ExecutionQueues
     {

@@ -1,6 +1,4 @@
 {
   "ProductName": "Threading",
-  "ExemptionCodes": [
-    "targetframeworks_notcontains_net7"
-  ]
+  "ExemptionCodes": []
 }
