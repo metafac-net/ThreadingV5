@@ -13,7 +13,7 @@ namespace MetaFac.Threading.Benchmarks
     [MemoryDiagnoser]
     //[SimpleJob(RuntimeMoniker.Net481)]
     //[SimpleJob(RuntimeMoniker.Net60)]
-    [SimpleJob(RuntimeMoniker.Net80)]
+    [SimpleJob(RuntimeMoniker.Net90)]
     [Orderer(SummaryOrderPolicy.FastestToSlowest)]
     public class ExecutionQueues
     {
@@ -44,6 +44,7 @@ namespace MetaFac.Threading.Benchmarks
             return new ValueTask<int>(input * input);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static Task<int> DoTask(int input, CancellationToken token)
         {
             return Task.FromResult(input * input);
