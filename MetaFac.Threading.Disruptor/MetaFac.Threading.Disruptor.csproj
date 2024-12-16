@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
-		<TargetFrameworks>net6.0;net8.0</TargetFrameworks>
+		<TargetFrameworks>net8.0;net9.0</TargetFrameworks>
 		<Nullable>enable</Nullable>
 		<WarningsAsErrors>nullable</WarningsAsErrors>
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
@@ -34,11 +34,11 @@
 
 	<ItemGroup>
 		<PackageReference Include="Disruptor" Version="6.0.0" />
-		<PackageReference Include="Nerdbank.GitVersioning" Version="3.6.141">
+		<PackageReference Include="Nerdbank.GitVersioning" Version="3.7.112">
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
-		<PackageReference Include="System.Threading.Tasks.Extensions" Version="4.5.4" />
+		<PackageReference Include="System.Threading.Tasks.Extensions" Version="4.6.0" />
 	</ItemGroup>
 
 	<ItemGroup>

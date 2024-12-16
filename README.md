@@ -1,7 +1,5 @@
 # MetaFac.Threading
 
-*Note V5.0 contains breaking changes.* 
-
 A collection of inter-thread coordination types with implementations based on
 System.Threading.Channels and LMAX Disruptor.
 
