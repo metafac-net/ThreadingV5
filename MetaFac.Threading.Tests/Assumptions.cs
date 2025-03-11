@@ -1,4 +1,4 @@
-﻿using FluentAssertions;
+﻿using Shouldly;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -10,10 +10,10 @@ namespace MetaFac.Threading.Tests
         public void DefaultValueTaskIsCompleted()
         {
             var result = new ValueTask();
-            result.IsCompleted.Should().BeTrue();
-            result.IsCompletedSuccessfully.Should().BeTrue();
-            result.IsCanceled.Should().BeFalse();
-            result.IsFaulted.Should().BeFalse();
+            result.IsCompleted.ShouldBeTrue();
+            result.IsCompletedSuccessfully.ShouldBeTrue();
+            result.IsCanceled.ShouldBeFalse();
+            result.IsFaulted.ShouldBeFalse();
         }
     }
 }

@@ -1,11 +1,11 @@
-﻿using FluentAssertions;
-using MetaFac.Threading.Channels;
+﻿using MetaFac.Threading.Channels;
 using MetaFac.Threading.Disruptor;
 using MetaFac.Threading.Core;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
+using Shouldly;
 
 namespace MetaFac.Threading.Tests
 {
@@ -73,9 +73,9 @@ namespace MetaFac.Threading.Tests
             await fsm.EnqueueAsync(0);
             fsm.Complete();
             var result = await fsm.FinalState;
-            result.Count.Should().Be(5);
-            result.Total.Should().Be(10);
-            result.SumSq.Should().Be(30);
+            result.Count.ShouldBe(5);
+            result.Total.ShouldBe(10);
+            result.SumSq.ShouldBe(30);
         }
     }
 }

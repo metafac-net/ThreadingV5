@@ -1,4 +1,4 @@
-﻿using FluentAssertions;
+﻿using Shouldly;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -44,7 +44,7 @@ namespace MetaFac.Threading.Tests
                 L4Nodes[l4].Add(1);
             });
 
-            L0Node.Count.Should().Be(EventCount);
+            L0Node.Count.ShouldBe(EventCount);
         }
 
     }

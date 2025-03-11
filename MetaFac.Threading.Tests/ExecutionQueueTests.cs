@@ -1,4 +1,4 @@
-﻿using FluentAssertions;
+﻿using Shouldly;
 using System;
 using System.Diagnostics;
 using System.Threading;
@@ -38,15 +38,14 @@ namespace MetaFac.Threading.Tests
             {
                 for (int i = 0; i < iterations; i++)
                 {
-                    await queue.EnqueueAsync(new ExecutableItem<bool, bool>(false, CancellationToken.None, DoWork))
-                        .ConfigureAwait(false);
+                    await queue.EnqueueAsync(new ExecutableItem<bool, bool>(false, CancellationToken.None, DoWork));
                 }
 
                 var lastItem = new ExecutableItem<bool, bool>(true, CancellationToken.None, DoWork);
                 await queue.EnqueueAsync(lastItem);
 
                 var result = await lastItem.GetTask();
-                result.Should().BeTrue();
+                result.ShouldBeTrue();
             }
         }
 
@@ -73,7 +72,7 @@ namespace MetaFac.Threading.Tests
                 {
                     var result = await workItem.GetTask();
                 });
-                ex.Message.Should().Be("I'm a bad app!");
+                ex.Message.ShouldBe("I'm a bad app!");
             }
         }
 
@@ -218,7 +217,7 @@ namespace MetaFac.Threading.Tests
                 }
             }
 
-            (goodCount + failCount).Should().Be(iterations);
+            (goodCount + failCount).ShouldBe(iterations);
         }
     }
 }

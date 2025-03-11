@@ -1,4 +1,4 @@
-﻿using FluentAssertions;
+﻿using Shouldly;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -11,7 +11,7 @@ namespace MetaFac.Threading.Tests
         {
             var cdt = new AwaitableCounter();
             bool result = await cdt.UntilZero;
-            result.Should().Be(true);
+            result.ShouldBeTrue();
         }
 
         [Fact]
@@ -19,8 +19,8 @@ namespace MetaFac.Threading.Tests
         {
             var cdt = new AwaitableCounter(1);
             (long count, bool complete) = cdt.State;
-            count.Should().Be(1);
-            complete.Should().BeFalse();
+            count.ShouldBe(1);
+            complete.ShouldBeFalse();
         }
 
         [Fact]
@@ -28,8 +28,8 @@ namespace MetaFac.Threading.Tests
         {
             var cdt = new AwaitableCounter(-1);
             (long count, bool complete) = cdt.State;
-            count.Should().Be(-1);
-            complete.Should().BeFalse();
+            count.ShouldBe(-1);
+            complete.ShouldBeFalse();
         }
 
         [Fact]
@@ -38,7 +38,7 @@ namespace MetaFac.Threading.Tests
             var cdt = new AwaitableCounter(1);
             cdt.Decrement();
             bool result = await cdt.UntilZero;
-            result.Should().Be(true);
+            result.ShouldBeTrue();
         }
 
         [Fact]
@@ -47,7 +47,7 @@ namespace MetaFac.Threading.Tests
             var cdt = new AwaitableCounter(-1);
             cdt.Increment();
             bool result = await cdt.UntilZero;
-            result.Should().Be(false);
+            result.ShouldBe(false);
         }
 
         [Fact]
@@ -61,7 +61,7 @@ namespace MetaFac.Threading.Tests
                 cdt.Decrement();
             });
             bool result = await cdt.UntilZero;
-            result.Should().Be(true);
+            result.ShouldBeTrue();
         }
 
         [Fact]
@@ -75,7 +75,7 @@ namespace MetaFac.Threading.Tests
                 cdt.Increment();
             });
             bool result = await cdt.UntilZero;
-            result.Should().Be(false);
+            result.ShouldBe(false);
         }
 
     }

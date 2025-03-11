@@ -17,7 +17,7 @@
 		<PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
 		<SignAssembly>true</SignAssembly>
 		<PackageTags>thread task sequencer scheduler coordinator metafac concurrency channels lmax disruptor</PackageTags>
-		<Copyright>Copyright (c) 2020-2024 MetaFac</Copyright>
+		<Copyright>Copyright (c) 2020-2025 MetaFac</Copyright>
 		<LangVersion>latest</LangVersion>
 		<AssemblyOriginatorKeyFile>..\SigningKey.snk</AssemblyOriginatorKeyFile>
 		<IncludeSymbols>true</IncludeSymbols>
@@ -34,7 +34,7 @@
 
 	<ItemGroup>
 		<PackageReference Include="Disruptor" Version="6.0.0" />
-		<PackageReference Include="Nerdbank.GitVersioning" Version="3.7.112">
+		<PackageReference Include="Nerdbank.GitVersioning" Version="3.7.115">
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>

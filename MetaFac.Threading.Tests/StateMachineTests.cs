@@ -1,4 +1,4 @@
-﻿using FluentAssertions;
+﻿using Shouldly;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -203,9 +203,9 @@ namespace MetaFac.Threading.Tests
                 await queue.EnqueueAsync(new Sample(0));
                 var snapshot = await handler.Complete;
 
-                snapshot.N.Should().Be(6);
-                snapshot.S1.Should().Be(30L);
-                snapshot.S2.Should().Be(220L);
+                snapshot.N.ShouldBe(6);
+                snapshot.S1.ShouldBe(30L);
+                snapshot.S2.ShouldBe(220L);
             }
         }
 
@@ -226,9 +226,9 @@ namespace MetaFac.Threading.Tests
                 await queue.EnqueueAsync(new Sample(0));
                 var snapshot = await handler.Complete;
 
-                snapshot.N.Should().Be(6);
-                snapshot.S1.Should().Be(30L);
-                snapshot.S2.Should().Be(220L);
+                snapshot.N.ShouldBe(6);
+                snapshot.S1.ShouldBe(30L);
+                snapshot.S2.ShouldBe(220L);
             }
         }
 
@@ -251,7 +251,7 @@ namespace MetaFac.Threading.Tests
                 }
                 await queue.EnqueueAsync(new Sample(0));
                 var snapshot = await handler.Complete;
-                snapshot.N.Should().Be(iterations);
+                snapshot.N.ShouldBe(iterations);
             }
         }
     }
