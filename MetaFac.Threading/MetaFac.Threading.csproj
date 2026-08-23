@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;net8.0;net9.0;net10.0</TargetFrameworks>
+    <TargetFrameworks>netstandard2.0;net8.0;net10.0</TargetFrameworks>
     <Nullable>enable</Nullable>
     <WarningsAsErrors>nullable</WarningsAsErrors>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
@@ -18,7 +18,7 @@
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
     <SignAssembly>true</SignAssembly>
     <PackageTags>thread task sequencer scheduler coordinator metafac concurrency channels lmax disruptor</PackageTags>
-    <Copyright>Copyright (c) 2020-2025 MetaFac</Copyright>
+    <Copyright>Copyright (c) 2020-2026 MetaFac</Copyright>
 	<LangVersion>latest</LangVersion>
     <AssemblyOriginatorKeyFile>..\SigningKey.snk</AssemblyOriginatorKeyFile>
     <IncludeSymbols>true</IncludeSymbols>
